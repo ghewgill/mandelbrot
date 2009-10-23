@@ -1,0 +1,371 @@
+<html>
+<head>
+<title>test</title>
+<style type="text/css">
+</style>
+<script type="text/javascript">
+//<![CDATA[
+    var TILE_SIZE = 256;
+    var Frame;
+    var FrameHeight, FrameWidth;
+    var TopLeftX, TopLeftY;
+    var OriginX, OriginY;
+    var Scale;
+    var Iterations = 200;
+    var MouseDown = false;
+    var Type = "m";
+    var JuliaX, JuliaY;
+    var ZoomLabel;
+
+    function makeSrc(i, j)
+    {
+        return "/mandelbrot/tile.cgi?" + [
+            "x0="+(OriginX+i*Scale),
+            "x1="+(OriginX+(i+1)*Scale),
+            "y0="+(OriginY+j*Scale),
+            "y1="+(OriginY+(j+1)*Scale),
+            "w="+TILE_SIZE,
+            "h="+TILE_SIZE,
+            "t="+Type,
+            "c="+JuliaX+","+JuliaY,
+            "i="+Iterations,
+        ].join("&");
+    }
+
+    /*function placetile()
+    {
+        this.style.left = this.newleft;
+        this.style.top = this.newtop;
+        this.style.width = TILE_SIZE;
+        this.style.height = TILE_SIZE;
+        this.style.display = "inline";
+    }*/
+
+    function redraw()
+    {
+        for (var j = 0; j < Tiles.length; j++) {
+            var a = Tiles[j];
+            for (var i = 0; i < a.length; i++) {
+                //a[i].newleft = TopLeftX + TILE_SIZE*i;
+                //a[i].newtop = TopLeftY + TILE_SIZE*j;
+                //a[i].onload = placetile;
+                a[i].style.left = TopLeftX + TILE_SIZE*i;
+                a[i].style.top = TopLeftY + TILE_SIZE*j;
+                a[i].style.display = "inline";
+                a[i].src = makeSrc(i, j);
+            }
+        }
+        ZoomLabel.innerHTML = 1/Scale + "x";
+    }
+
+    function redrawCenter(cx, cy)
+    {
+        var ox = Math.ceil(FrameWidth/2 / TILE_SIZE);
+        var oy = Math.ceil(FrameHeight/2 / TILE_SIZE);
+        TopLeftX = FrameWidth/2 - Math.floor((ox + cx/Scale - Math.floor(cx/Scale)) * TILE_SIZE);
+        TopLeftY = FrameHeight/2 - Math.floor((oy + cy/Scale - Math.floor(cy/Scale)) * TILE_SIZE);
+        OriginX = Math.floor(cx/Scale - ox) * Scale;
+        OriginY = Math.floor(cy/Scale - oy) * Scale;
+        document.getElementById("debug").innerHTML = "Scale="+Scale+" c="+cx+","+cy+" o="+ox+","+oy+" TopLeft="+TopLeftX+","+TopLeftY+" Origin="+OriginX+","+OriginY;
+        redraw();
+    }
+
+    function getClickPos(ev)
+    {
+        var t = ev.target || ev.srcElement;
+        var x = ev.layerX || ev.offsetX;
+        var y = ev.layerY || ev.offsetY;
+        for (var j in Tiles) {
+            var a = Tiles[j];
+            for (var i in a) {
+                if (t == a[i]) {
+                    return [OriginX + i*Scale + x*Scale/TILE_SIZE,
+                            OriginY + j*Scale + y*Scale/TILE_SIZE];
+                }
+            }
+        }
+        return null;
+    }
+
+    function down(ev)
+    {
+        if (!ev) ev = window.event;
+        if (ev.preventDefault) {
+            ev.preventDefault();
+        }
+        DragStartX = parseInt(ev.clientX);
+        DragStartY = parseInt(ev.clientY);
+        MouseDown = true;
+        ev.returnValue = false;
+    }
+
+    function dragstart(ev)
+    {
+        if (!ev) ev = window.event;
+        ev.returnValue = false;
+        return false;
+    }
+
+    function move(ev)
+    {
+        if (!ev) ev = window.event;
+        if (MouseDown) {
+            for (var j = 0; j < Tiles.length; j++) {
+                var a = Tiles[j];
+                for (var i = 0; i < a.length; i++) {
+                    a[i].style.left = TopLeftX + i * TILE_SIZE + (ev.clientX - DragStartX);
+                    a[i].style.top = TopLeftY + j * TILE_SIZE + (ev.clientY - DragStartY);
+                }
+            }
+            var leftmost = parseInt(Tiles[0][0].style.left);
+            var rightmost = parseInt(Tiles[0][Tiles[0].length-1].style.left);
+            document.getElementById("debug").innerHTML = TopLeftX;
+            if (leftmost > 0) {
+                TopLeftX -= TILE_SIZE;
+                OriginX -= Scale;
+                for (var j = 0; j < Tiles.length; j++) {
+                    var t = Tiles[j].pop();
+                    Tiles[j].unshift(t);
+                    t.style.left = leftmost - TILE_SIZE;
+                    t.src = makeSrc(0, j);
+                }
+            } else if (rightmost+TILE_SIZE < FrameWidth) {
+                TopLeftX += TILE_SIZE;
+                OriginX += Scale;
+                for (var j = 0; j < Tiles.length; j++) {
+                    var t = Tiles[j].shift();
+                    Tiles[j].push(t);
+                    t.style.left = rightmost + TILE_SIZE;
+                    t.src = makeSrc(Tiles[0].length-1, j);
+                }
+            }
+            var topmost = parseInt(Tiles[0][0].style.top);
+            var bottommost = parseInt(Tiles[Tiles.length-1][0].style.top);
+            if (topmost > 0) {
+                TopLeftY -= TILE_SIZE;
+                OriginY -= Scale;
+                Tiles.unshift(Tiles.pop());
+                for (var i = 0; i < Tiles[0].length; i++) {
+                    var t = Tiles[0][i];
+                    t.style.top = topmost - TILE_SIZE;
+                    t.src = makeSrc(i, 0);
+                }
+            } else if (bottommost+TILE_SIZE < FrameHeight) {
+                TopLeftY += TILE_SIZE;
+                OriginY += Scale;
+                Tiles.push(Tiles.shift());
+                for (var i = 0; i < Tiles[0].length; i++) {
+                    var t = Tiles[Tiles.length-1][i];
+                    t.style.top = bottommost + TILE_SIZE;
+                    t.src = makeSrc(i, Tiles.length-1);
+                }
+            }
+        }
+    }
+
+    function up(ev)
+    {
+        if (!ev) ev = window.event;
+        if (MouseDown) {
+            TopLeftX += (ev.clientX - DragStartX);
+            TopLeftY += (ev.clientY - DragStartY);
+        }
+        MouseDown = false;
+    }
+
+    function julia(ev)
+    {
+        if (!ev) ev = window.event;
+        if (Type == "j") {
+            return zoomin(ev);
+        }
+        for (var j in Tiles) {
+            var a = Tiles[j];
+            for (var i in a) {
+                if (ev.target == a[i]) {
+                    var cx = OriginX + i*Scale + ev.layerX*Scale/TILE_SIZE;
+                    var cy = OriginY + j*Scale + ev.layerY*Scale/TILE_SIZE;
+                    Type = 'j';
+                    JuliaX = cx;
+                    JuliaY = cy;
+                    Scale = 1;
+                    TopLeftX = 0;
+                    TopLeftY = 0;
+                    OriginX = cx - parseInt(Frame.style.width)/2*Scale/TILE_SIZE;
+                    OriginY = cy - parseInt(Frame.style.height)/2*Scale/TILE_SIZE;
+                    redraw();
+                    return;
+                }
+            }
+        }
+    }
+
+    function zoomin(ev)
+    {
+        if (!ev) ev = window.event;
+        if (Scale/2 > 0) {
+            var c = getClickPos(ev);
+            if (c != null) {
+                for (j in Tiles) {
+                    var a = Tiles[j];
+                    for (i in a) {
+                        //a[i].style.width = TILE_SIZE*2;
+                        //a[i].style.height = TILE_SIZE*2;
+                        a[i].style.display = "none";
+                    }
+                }
+                Scale /= 2;
+                redrawCenter(c[0], c[1]);
+            }
+        }
+    }
+
+    function zoominbutton()
+    {
+        if (Scale/2 == 0) {
+            return;
+        }
+        for (j in Tiles) {
+            var a = Tiles[j];
+            for (i in a) {
+                //a[i].style.width = TILE_SIZE*2;
+                //a[i].style.height = TILE_SIZE*2;
+                a[i].style.display = "none";
+            }
+        }
+        var cx = OriginX + (FrameWidth/2 - TopLeftX) * Scale / TILE_SIZE;
+        var cy = OriginY + (FrameHeight/2 - TopLeftY) * Scale / TILE_SIZE;
+        Scale /= 2;
+        redrawCenter(cx, cy);
+    }
+
+    function zoomout()
+    {
+        if (Scale >= 1) {
+            return;
+        }
+        for (j in Tiles) {
+            var a = Tiles[j];
+            for (i in a) {
+                //a[i].style.width = TILE_SIZE*2;
+                //a[i].style.height = TILE_SIZE*2;
+                a[i].style.display = "none";
+            }
+        }
+        var cx = OriginX + (FrameWidth/2 - TopLeftX) * Scale / TILE_SIZE;
+        var cy = OriginY + (FrameHeight/2 - TopLeftY) * Scale / TILE_SIZE;
+        Scale *= 2;
+        redrawCenter(cx, cy);
+    }
+
+    function scroll(ev)
+    {
+        if (!ev) ev = window.event;
+        var d = 0;
+        if (ev.wheelDelta) {
+            d = ev.wheelDelta / 120;
+            if (window.opera) {
+                d = -d;
+            }
+        } else if (ev.detail) {
+            d = -ev.detail;
+        }
+        if (d > 0) {
+            zoomin(ev);
+        } else if (d < 0) {
+            zoomout(ev);
+        }
+        if (ev.preventDefault) {
+            ev.preventDefault();
+        }
+    }
+
+    function detailup()
+    {
+        Iterations += 100;
+        redraw();
+    }
+
+    function detaildown()
+    {
+        if (Iterations > 100) {
+            Iterations -= 100;
+            redraw();
+        }
+    }
+
+    function init(name)
+    {
+        Frame = document.getElementById(name);
+        Frame.style.overflow = "hidden";
+        Frame.style.position = "relative";
+        FrameHeight = parseInt(Frame.style.height);
+        FrameWidth = parseInt(Frame.style.width);
+        Tiles = [];
+        for (var j = 0; j*TILE_SIZE < FrameHeight+TILE_SIZE; j++) {
+            var a = [];
+            Tiles[Tiles.length] = a;
+            for (var i = 0; i*TILE_SIZE < FrameWidth+TILE_SIZE; i++) {
+                var t = document.createElement("img");
+                t.style.position = "absolute";
+                t.style.display = "none";
+                t.onmousedown = down;
+                t.ondragstart = dragstart;
+                t.onmousemove = move;
+                t.onmouseup = up;
+                t.ondblclick = zoomin;
+                if (t.addEventListener) {
+                    t.addEventListener("DOMMouseScroll", scroll, false);
+                }
+                t.onmousewheel = scroll;
+                Frame.appendChild(t);
+                a[a.length] = t;
+            }
+        }
+        function addbutton(left, top, onclick, url) {
+            var x = document.createElement("div");
+            x.style.position = "absolute";
+            x.style.left = left;
+            x.style.top = top;
+            x.style.cursor = "pointer";
+            x.onclick = onclick;
+            x.innerHTML = "<img src=\""+url+"\">";
+            Frame.appendChild(x);
+        }
+        function addlabel(left, top, text) {
+            var x = document.createElement("div");
+            x.style.position = "absolute";
+            x.style.left = left;
+            x.style.top = top;
+            x.style.width = 60;
+            x.style.color = "white";
+            x.style.textAlign = "center";
+            x.innerHTML = text;
+            Frame.appendChild(x);
+            return x;
+        }
+        addbutton(20, 0, "", "pan_up.png");
+        addbutton(0, 20, "", "pan_left.png");
+        addbutton(40, 20, "", "pan_right.png");
+        addbutton(20, 40, "", "pan_down.png");
+        addbutton(20, 80, zoominbutton, "zoom_in.png");
+        ZoomLabel = addlabel(0, 100, "1x");
+        addbutton(20, 120, zoomout, "zoom_out.png");
+        addbutton(20, 160, detailup, "detail_more.png");
+        addbutton(20, 180, detaildown, "detail_less.png");
+        window.onmouseup = up;
+
+        Scale = 1.0;
+        redrawCenter(-0.5, 0);
+    }
+//]]>
+</script>
+</head>
+<body onload="init('test')">
+<p>moo
+<span id="debug"></span>
+</p>
+<div id="test" style="margin-left: 2em; border: thin black solid; width: 600; height: 520">
+</div>
+</body>
+</html>
