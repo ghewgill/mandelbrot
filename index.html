@@ -296,11 +296,10 @@
     }
 
     $(document).ready(function() {
-        Frame = document.getElementById("test");
-        Frame.style.overflow = "hidden";
-        Frame.style.position = "relative";
-        FrameHeight = parseInt(Frame.style.height);
-        FrameWidth = parseInt(Frame.style.width);
+        Frame = $("#test");
+        Frame.css({"overflow": "hidden", "position": "relative"});
+        FrameHeight = parseInt(Frame.css("height"));
+        FrameWidth = parseInt(Frame.css("width"));
         Tiles = [];
         for (var j = 0; j*TILE_SIZE < FrameHeight+TILE_SIZE; j++) {
             var a = [];
@@ -318,7 +317,7 @@
                     t.addEventListener("DOMMouseScroll", scroll, false);
                 }
                 t.onmousewheel = scroll;
-                Frame.appendChild(t);
+                Frame.append(t);
                 a[a.length] = t;
             }
         }
@@ -330,7 +329,7 @@
             x.style.cursor = "pointer";
             x.onclick = onclick;
             x.innerHTML = "<img src=\""+url+"\">";
-            Frame.appendChild(x);
+            Frame.append(x);
         }
         function addlabel(left, top, text) {
             var x = document.createElement("div");
@@ -341,7 +340,7 @@
             x.style.color = "white";
             x.style.textAlign = "center";
             x.innerHTML = text;
-            Frame.appendChild(x);
+            Frame.append(x);
             return x;
         }
         addbutton(20, 0, "", "pan_up.png");
