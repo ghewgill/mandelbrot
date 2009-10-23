@@ -33,27 +33,17 @@
         ].join("&");
     }
 
-    /*function placetile()
-    {
-        this.style.left = this.newleft;
-        this.style.top = this.newtop;
-        this.style.width = TILE_SIZE;
-        this.style.height = TILE_SIZE;
-        this.style.display = "inline";
-    }*/
-
     function redraw()
     {
         for (var j = 0; j < Tiles.length; j++) {
             var a = Tiles[j];
             for (var i = 0; i < a.length; i++) {
-                //a[i].newleft = TopLeftX + TILE_SIZE*i;
-                //a[i].newtop = TopLeftY + TILE_SIZE*j;
-                //a[i].onload = placetile;
-                a[i].style.left = TopLeftX + TILE_SIZE*i;
-                a[i].style.top = TopLeftY + TILE_SIZE*j;
-                a[i].style.display = "inline";
-                a[i].src = makeSrc(i, j);
+                a[i].css({
+                    "left": TopLeftX + TILE_SIZE*i,
+                    "top": TopLeftY + TILE_SIZE*j,
+                    "display": "inline"
+                });
+                a[i].attr("src", makeSrc(i, j));
             }
         }
         ZoomLabel.innerHTML = 1/Scale + "x";
@@ -67,19 +57,19 @@
         TopLeftY = FrameHeight/2 - Math.floor((oy + cy/Scale - Math.floor(cy/Scale)) * TILE_SIZE);
         OriginX = Math.floor(cx/Scale - ox) * Scale;
         OriginY = Math.floor(cy/Scale - oy) * Scale;
-        document.getElementById("debug").innerHTML = "Scale="+Scale+" c="+cx+","+cy+" o="+ox+","+oy+" TopLeft="+TopLeftX+","+TopLeftY+" Origin="+OriginX+","+OriginY;
+        $("#debug").html("Scale="+Scale+" c="+cx+","+cy+" o="+ox+","+oy+" TopLeft="+TopLeftX+","+TopLeftY+" Origin="+OriginX+","+OriginY);
         redraw();
     }
 
     function getClickPos(ev)
     {
-        var t = ev.target || ev.srcElement;
-        var x = ev.layerX || ev.offsetX;
-        var y = ev.layerY || ev.offsetY;
+        var t = ev.currentTarget;
+        var x = ev.pageX - $(t).offset().left;
+        var y = ev.pageY - $(t).offset().top;
         for (var j in Tiles) {
             var a = Tiles[j];
             for (var i in a) {
-                if (t == a[i]) {
+                if (t == a[i].get(0)) {
                     return [OriginX + i*Scale + x*Scale/TILE_SIZE,
                             OriginY + j*Scale + y*Scale/TILE_SIZE];
                 }
@@ -90,45 +80,41 @@
 
     function down(ev)
     {
-        if (!ev) ev = window.event;
-        if (ev.preventDefault) {
-            ev.preventDefault();
-        }
+        ev.preventDefault();
         DragStartX = parseInt(ev.clientX);
         DragStartY = parseInt(ev.clientY);
         MouseDown = true;
-        ev.returnValue = false;
+        return false;
     }
 
     function dragstart(ev)
     {
-        if (!ev) ev = window.event;
-        ev.returnValue = false;
         return false;
     }
 
     function move(ev)
     {
-        if (!ev) ev = window.event;
         if (MouseDown) {
             for (var j = 0; j < Tiles.length; j++) {
                 var a = Tiles[j];
                 for (var i = 0; i < a.length; i++) {
-                    a[i].style.left = TopLeftX + i * TILE_SIZE + (ev.clientX - DragStartX);
-                    a[i].style.top = TopLeftY + j * TILE_SIZE + (ev.clientY - DragStartY);
+                    a[i].css({
+                        "left": TopLeftX + i * TILE_SIZE + (ev.clientX - DragStartX),
+                        "top": TopLeftY + j * TILE_SIZE + (ev.clientY - DragStartY)
+                    });
                 }
             }
-            var leftmost = parseInt(Tiles[0][0].style.left);
-            var rightmost = parseInt(Tiles[0][Tiles[0].length-1].style.left);
-            document.getElementById("debug").innerHTML = TopLeftX;
+            var leftmost = Tiles[0][0].offset().left;
+            var rightmost = Tiles[0][Tiles[0].length-1].offset().left;
+            $("#debug").html(TopLeftX);
             if (leftmost > 0) {
                 TopLeftX -= TILE_SIZE;
                 OriginX -= Scale;
                 for (var j = 0; j < Tiles.length; j++) {
                     var t = Tiles[j].pop();
                     Tiles[j].unshift(t);
-                    t.style.left = leftmost - TILE_SIZE;
-                    t.src = makeSrc(0, j);
+                    t.css("left", leftmost - TILE_SIZE);
+                    t.attr("src", makeSrc(0, j));
                 }
             } else if (rightmost+TILE_SIZE < FrameWidth) {
                 TopLeftX += TILE_SIZE;
@@ -136,20 +122,20 @@
                 for (var j = 0; j < Tiles.length; j++) {
                     var t = Tiles[j].shift();
                     Tiles[j].push(t);
-                    t.style.left = rightmost + TILE_SIZE;
-                    t.src = makeSrc(Tiles[0].length-1, j);
+                    t.css("left", rightmost + TILE_SIZE);
+                    t.attr("src", makeSrc(Tiles[0].length-1, j));
                 }
             }
-            var topmost = parseInt(Tiles[0][0].style.top);
-            var bottommost = parseInt(Tiles[Tiles.length-1][0].style.top);
+            var topmost = Tiles[0][0].offset().top;
+            var bottommost = Tiles[Tiles.length-1][0].offset().top;
             if (topmost > 0) {
                 TopLeftY -= TILE_SIZE;
                 OriginY -= Scale;
                 Tiles.unshift(Tiles.pop());
                 for (var i = 0; i < Tiles[0].length; i++) {
                     var t = Tiles[0][i];
-                    t.style.top = topmost - TILE_SIZE;
-                    t.src = makeSrc(i, 0);
+                    t.css("top", topmost - TILE_SIZE);
+                    t.attr("src", makeSrc(i, 0));
                 }
             } else if (bottommost+TILE_SIZE < FrameHeight) {
                 TopLeftY += TILE_SIZE;
@@ -157,8 +143,8 @@
                 Tiles.push(Tiles.shift());
                 for (var i = 0; i < Tiles[0].length; i++) {
                     var t = Tiles[Tiles.length-1][i];
-                    t.style.top = bottommost + TILE_SIZE;
-                    t.src = makeSrc(i, Tiles.length-1);
+                    t.css("top", bottommost + TILE_SIZE);
+                    t.attr("src", makeSrc(i, Tiles.length-1));
                 }
             }
         }
@@ -166,7 +152,6 @@
 
     function up(ev)
     {
-        if (!ev) ev = window.event;
         if (MouseDown) {
             TopLeftX += (ev.clientX - DragStartX);
             TopLeftY += (ev.clientY - DragStartY);
@@ -203,16 +188,13 @@
 
     function zoomin(ev)
     {
-        if (!ev) ev = window.event;
         if (Scale/2 > 0) {
             var c = getClickPos(ev);
             if (c != null) {
                 for (j in Tiles) {
                     var a = Tiles[j];
                     for (i in a) {
-                        //a[i].style.width = TILE_SIZE*2;
-                        //a[i].style.height = TILE_SIZE*2;
-                        a[i].style.display = "none";
+                        a[i].css("display", "none");
                     }
                 }
                 Scale /= 2;
@@ -229,9 +211,7 @@
         for (j in Tiles) {
             var a = Tiles[j];
             for (i in a) {
-                //a[i].style.width = TILE_SIZE*2;
-                //a[i].style.height = TILE_SIZE*2;
-                a[i].style.display = "none";
+                a[i].css("display", "none");
             }
         }
         var cx = OriginX + (FrameWidth/2 - TopLeftX) * Scale / TILE_SIZE;
@@ -248,9 +228,7 @@
         for (j in Tiles) {
             var a = Tiles[j];
             for (i in a) {
-                //a[i].style.width = TILE_SIZE*2;
-                //a[i].style.height = TILE_SIZE*2;
-                a[i].style.display = "none";
+                a[i].css("display", "none");
             }
         }
         var cx = OriginX + (FrameWidth/2 - TopLeftX) * Scale / TILE_SIZE;
@@ -298,48 +276,51 @@
     $(document).ready(function() {
         Frame = $("#test");
         Frame.css({"overflow": "hidden", "position": "relative"});
-        FrameHeight = parseInt(Frame.css("height"));
-        FrameWidth = parseInt(Frame.css("width"));
+        FrameHeight = Frame.height();
+        FrameWidth = Frame.width();
         Tiles = [];
         for (var j = 0; j*TILE_SIZE < FrameHeight+TILE_SIZE; j++) {
             var a = [];
             Tiles[Tiles.length] = a;
             for (var i = 0; i*TILE_SIZE < FrameWidth+TILE_SIZE; i++) {
-                var t = document.createElement("img");
-                t.style.position = "absolute";
-                t.style.display = "none";
-                t.onmousedown = down;
-                t.ondragstart = dragstart;
-                t.onmousemove = move;
-                t.onmouseup = up;
-                t.ondblclick = zoomin;
-                if (t.addEventListener) {
-                    t.addEventListener("DOMMouseScroll", scroll, false);
-                }
-                t.onmousewheel = scroll;
+                var t = $(document.createElement("img"));
+                t.css({"position": "absolute", "display": "none"});
+                t.bind("mousedown", down);
+                t.bind("dragstart", dragstart);
+                t.bind("mousemove", move);
+                t.bind("mouseup", up);
+                t.bind("dblclick", zoomin);
+                //if (t.addEventListener) {
+                //    t.addEventListener("DOMMouseScroll", scroll, false);
+                //}
+                //t.onmousewheel = scroll;
                 Frame.append(t);
                 a[a.length] = t;
             }
         }
         function addbutton(left, top, onclick, url) {
-            var x = document.createElement("div");
-            x.style.position = "absolute";
-            x.style.left = left;
-            x.style.top = top;
-            x.style.cursor = "pointer";
-            x.onclick = onclick;
-            x.innerHTML = "<img src=\""+url+"\">";
+            var x = $(document.createElement("div"));
+            x.css({
+                "position": "absolute",
+                "left": left,
+                "top": top,
+                "cursor": "pointer"
+            });
+            x.bind("click", onclick);
+            x.html("<img src=\""+url+"\">");
             Frame.append(x);
         }
         function addlabel(left, top, text) {
-            var x = document.createElement("div");
-            x.style.position = "absolute";
-            x.style.left = left;
-            x.style.top = top;
-            x.style.width = 60;
-            x.style.color = "white";
-            x.style.textAlign = "center";
-            x.innerHTML = text;
+            var x = $(document.createElement("div"));
+            x.css({
+                "position": "absolute",
+                "left": left,
+                "top": top,
+                "width": 60,
+                "color": "white",
+                "textAlign": "center"
+            });
+            x.html(text);
             Frame.append(x);
             return x;
         }
