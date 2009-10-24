@@ -11,7 +11,7 @@
     var FrameHeight, FrameWidth;
     var TopLeftX, TopLeftY;
     var OriginX, OriginY;
-    var Scale;
+    var Scale = 1.0;
     var Iterations = 200;
     var MouseDown = false;
     var Type = "m";
@@ -48,8 +48,9 @@
         ZoomLabel.html(1/Scale + "x");
     }
 
-    function redrawCenter(cx, cy)
+    function redrawCenter(newscale, cx, cy)
     {
+        Scale = newscale;
         var ox = Math.ceil(FrameWidth/2 / TILE_SIZE);
         var oy = Math.ceil(FrameHeight/2 / TILE_SIZE);
         TopLeftX = FrameWidth/2 - Math.floor((ox + cx/Scale - Math.floor(cx/Scale)) * TILE_SIZE);
@@ -196,8 +197,7 @@
                         a[i].css("display", "none");
                     }
                 }
-                Scale /= 2;
-                redrawCenter(c[0], c[1]);
+                redrawCenter(Scale/2, c[0], c[1]);
             }
         }
     }
@@ -215,8 +215,7 @@
         }
         var cx = OriginX + (FrameWidth/2 - TopLeftX) * Scale / TILE_SIZE;
         var cy = OriginY + (FrameHeight/2 - TopLeftY) * Scale / TILE_SIZE;
-        Scale /= 2;
-        redrawCenter(cx, cy);
+        redrawCenter(Scale/2, cx, cy);
     }
 
     function zoomout()
@@ -232,8 +231,7 @@
         }
         var cx = OriginX + (FrameWidth/2 - TopLeftX) * Scale / TILE_SIZE;
         var cy = OriginY + (FrameHeight/2 - TopLeftY) * Scale / TILE_SIZE;
-        Scale *= 2;
-        redrawCenter(cx, cy);
+        redrawCenter(Scale*2, cx, cy);
     }
 
     function scroll(ev)
@@ -337,8 +335,7 @@
         addbutton(20, 180, detaildown, "detail_less.png");
         window.onmouseup = up;
 
-        Scale = 1.0;
-        redrawCenter(-0.5, 0);
+        redrawCenter(1.0, -0.5, 0);
     });
 //]]>
 </script>
