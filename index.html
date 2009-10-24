@@ -40,8 +40,7 @@
             for (var i = 0; i < a.length; i++) {
                 a[i].css({
                     "left": TopLeftX + TILE_SIZE*i,
-                    "top": TopLeftY + TILE_SIZE*j,
-                    "display": "inline"
+                    "top": TopLeftY + TILE_SIZE*j
                 });
                 a[i].attr("src", makeSrc(i, j));
             }
@@ -294,6 +293,9 @@
                 //    t.addEventListener("DOMMouseScroll", scroll, false);
                 //}
                 //t.onmousewheel = scroll;
+                t.load(function() {
+                    $(this).css("display", "inline");
+                });
                 Frame.append(t);
                 a[a.length] = t;
             }
