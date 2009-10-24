@@ -46,7 +46,7 @@
                 a[i].attr("src", makeSrc(i, j));
             }
         }
-        ZoomLabel.innerHTML = 1/Scale + "x";
+        ZoomLabel.html(1/Scale + "x");
     }
 
     function redrawCenter(cx, cy)
