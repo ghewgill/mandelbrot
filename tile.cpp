@@ -126,7 +126,7 @@ void tile()
             color[i] = gdImageColorAllocate(img, 255, 0, (int)(255*(6-c)));
         }
 #else
-        color[i] = gdImageColorAllocate(img, 0, 0, i*255/ncolors);
+        color[i] = gdImageColorAllocate(img, i*255/ncolors, i*255/ncolors, i*255/ncolors);
 #endif
     }
     color[ncolors-1] = white;
