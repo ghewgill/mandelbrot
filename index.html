@@ -278,6 +278,7 @@
                 "cursor": "pointer"
             });
             x.bind("click", onclick);
+            x.bind("dblclick", function(ev) { ev.stopPropagation(); });
             x.html("<img src=\""+url+"\">");
             Frame.append(x);
         }
