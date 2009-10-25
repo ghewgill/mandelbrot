@@ -7,7 +7,7 @@
 
 #include <fcgi_stdio.h>
 
-#undef RAINBOW
+#define RAINBOW
 #define DEBUG
 #ifdef DEBUG
     #undef DEBUG_BORDER
@@ -113,17 +113,17 @@ void tile()
 #ifdef RAINBOW
         double c = 6.0*((i+0*ncolors/6)%ncolors) / ncolors;
         if (c < 1) {
-            color[i] = gdImageColorAllocate(img, 255, (int)(255*(c)), 0);
+            color[i] = gdImageColorAllocate(img,                0,   (int)(255*(c)),              255);
         } else if (c < 2) {
-            color[i] = gdImageColorAllocate(img, (int)(255*(2-c)), 255, 0);
+            color[i] = gdImageColorAllocate(img,                0,              255, (int)(255*(2-c)));
         } else if (c < 3) {
-            color[i] = gdImageColorAllocate(img, 0, 255, (int)(255*(c-2)));
+            color[i] = gdImageColorAllocate(img, (int)(255*(c-2)),              255,                0);
         } else if (c < 4) {
-            color[i] = gdImageColorAllocate(img, 0, (int)(255*(4-c)), 255);
+            color[i] = gdImageColorAllocate(img,              255, (int)(255*(4-c)),                0);
         } else if (c < 5) {
-            color[i] = gdImageColorAllocate(img, (int)(255*(c-4)), 0, 255);
+            color[i] = gdImageColorAllocate(img,              255,                0, (int)(255*(c-4)));
         } else {
-            color[i] = gdImageColorAllocate(img, 255, 0, (int)(255*(6-c)));
+            color[i] = gdImageColorAllocate(img, (int)(255*(6-c)),                0,              255);
         }
 #else
         color[i] = gdImageColorAllocate(img, i*255/ncolors, i*255/ncolors, i*255/ncolors);
@@ -149,7 +149,7 @@ void tile()
             long double x = x0 + tx*sx;
             int n = g->iterate(complex<long double>(x, y), iterations);
             if (n < iterations) {
-                gdImageSetPixel(img, tx, ty, color[n*ncolors/iterations]);
+                gdImageSetPixel(img, tx, ty, color[n % ncolors]);
             } else {
                 gdImageSetPixel(img, tx, ty, black);
             }
