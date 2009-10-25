@@ -105,6 +105,8 @@ void tile()
         free(q);
     }
 
+    iterations = (int)(100 * log1p(1/(x1-x0)));
+
     gdImagePtr img = gdImageCreate(width, height);
     int black = gdImageColorAllocate(img, 0, 0, 0);
     int white = gdImageColorAllocate(img, 255, 255, 255);
