@@ -79,6 +79,53 @@
         return false;
     }
 
+    function adjust()
+    {
+        var leftmost = Tiles[0][0].offset().left;
+        var rightmost = Tiles[0][Tiles[0].length-1].offset().left;
+        $("#debug").html(TopLeftX);
+        if (leftmost > 0) {
+            TopLeftX -= TILE_SIZE;
+            OriginX -= Scale;
+            for (var j = 0; j < Tiles.length; j++) {
+                var t = Tiles[j].pop();
+                Tiles[j].unshift(t);
+                t.css("left", leftmost - TILE_SIZE);
+                t.attr("src", makeSrc(0, j));
+            }
+        } else if (rightmost+TILE_SIZE < FrameWidth) {
+            TopLeftX += TILE_SIZE;
+            OriginX += Scale;
+            for (var j = 0; j < Tiles.length; j++) {
+                var t = Tiles[j].shift();
+                Tiles[j].push(t);
+                t.css("left", rightmost + TILE_SIZE);
+                t.attr("src", makeSrc(Tiles[0].length-1, j));
+            }
+        }
+        var topmost = Tiles[0][0].offset().top;
+        var bottommost = Tiles[Tiles.length-1][0].offset().top;
+        if (topmost > 0) {
+            TopLeftY -= TILE_SIZE;
+            OriginY -= Scale;
+            Tiles.unshift(Tiles.pop());
+            for (var i = 0; i < Tiles[0].length; i++) {
+                var t = Tiles[0][i];
+                t.css("top", topmost - TILE_SIZE);
+                t.attr("src", makeSrc(i, 0));
+            }
+        } else if (bottommost+TILE_SIZE < FrameHeight) {
+            TopLeftY += TILE_SIZE;
+            OriginY += Scale;
+            Tiles.push(Tiles.shift());
+            for (var i = 0; i < Tiles[0].length; i++) {
+                var t = Tiles[Tiles.length-1][i];
+                t.css("top", bottommost + TILE_SIZE);
+                t.attr("src", makeSrc(i, Tiles.length-1));
+            }
+        }
+    }
+
     function move(ev)
     {
         if (MouseDown) {
@@ -91,49 +138,7 @@
                     });
                 }
             }
-            var leftmost = Tiles[0][0].offset().left;
-            var rightmost = Tiles[0][Tiles[0].length-1].offset().left;
-            $("#debug").html(TopLeftX);
-            if (leftmost > 0) {
-                TopLeftX -= TILE_SIZE;
-                OriginX -= Scale;
-                for (var j = 0; j < Tiles.length; j++) {
-                    var t = Tiles[j].pop();
-                    Tiles[j].unshift(t);
-                    t.css("left", leftmost - TILE_SIZE);
-                    t.attr("src", makeSrc(0, j));
-                }
-            } else if (rightmost+TILE_SIZE < FrameWidth) {
-                TopLeftX += TILE_SIZE;
-                OriginX += Scale;
-                for (var j = 0; j < Tiles.length; j++) {
-                    var t = Tiles[j].shift();
-                    Tiles[j].push(t);
-                    t.css("left", rightmost + TILE_SIZE);
-                    t.attr("src", makeSrc(Tiles[0].length-1, j));
-                }
-            }
-            var topmost = Tiles[0][0].offset().top;
-            var bottommost = Tiles[Tiles.length-1][0].offset().top;
-            if (topmost > 0) {
-                TopLeftY -= TILE_SIZE;
-                OriginY -= Scale;
-                Tiles.unshift(Tiles.pop());
-                for (var i = 0; i < Tiles[0].length; i++) {
-                    var t = Tiles[0][i];
-                    t.css("top", topmost - TILE_SIZE);
-                    t.attr("src", makeSrc(i, 0));
-                }
-            } else if (bottommost+TILE_SIZE < FrameHeight) {
-                TopLeftY += TILE_SIZE;
-                OriginY += Scale;
-                Tiles.push(Tiles.shift());
-                for (var i = 0; i < Tiles[0].length; i++) {
-                    var t = Tiles[Tiles.length-1][i];
-                    t.css("top", bottommost + TILE_SIZE);
-                    t.attr("src", makeSrc(i, Tiles.length-1));
-                }
-            }
+            adjust();
         }
     }
 
@@ -144,6 +149,22 @@
             TopLeftY += (ev.clientY - DragStartY);
         }
         MouseDown = false;
+    }
+
+    function pan(dx, dy)
+    {
+        for (var j = 0; j < Tiles.length; j++) {
+            var a = Tiles[j];
+            for (var i = 0; i < a.length; i++) {
+                a[i].css({
+                    "left": TopLeftX + i * TILE_SIZE + dx,
+                    "top": TopLeftY + j * TILE_SIZE + dy
+                });
+            }
+        }
+        adjust();
+        TopLeftX += dx;
+        TopLeftY += dy;
     }
 
     /*function julia(ev)
@@ -300,10 +321,10 @@
             Frame.append(x);
             return x;
         }
-        addbutton(20, 0, "", "pan_up.png");
-        addbutton(0, 20, "", "pan_left.png");
-        addbutton(40, 20, "", "pan_right.png");
-        addbutton(20, 40, "", "pan_down.png");
+        addbutton(20, 0, function() { pan(0, 50); }, "pan_up.png");
+        addbutton(0, 20, function() { pan(50, 0); }, "pan_left.png");
+        addbutton(40, 20, function() { pan(-50, 0); }, "pan_right.png");
+        addbutton(20, 40, function() { pan(0, -50); }, "pan_down.png");
         addbutton(20, 80, zoominbutton, "zoom_in.png");
         ZoomLabel = addlabel(0, 100, "1x");
         addbutton(20, 120, zoomout, "zoom_out.png");
