@@ -38,14 +38,14 @@ gdIOCtx fcgiout = {
 
 class Generator {
 public:
-    virtual int iterate(const complex<double> &p, int N) = 0;
+    virtual int iterate(const complex<long double> &p, int N) = 0;
 };
 
 class Mandelbrot: public Generator {
 public:
-    virtual int iterate(const complex<double> &p, int N)
+    virtual int iterate(const complex<long double> &p, int N)
     {
-        complex<double> z = p;
+        complex<long double> z = p;
         int n = 0;
         while (z.real()*z.real()+z.imag()*z.imag() < 4 && n < N) {
             z = z*z + p;
@@ -57,10 +57,10 @@ public:
 
 class Julia: public Generator {
 public:
-    Julia(const complex<double> &c): c(c) {}
-    virtual int iterate(const complex<double> &p, int N)
+    Julia(const complex<long double> &c): c(c) {}
+    virtual int iterate(const complex<long double> &p, int N)
     {
-        complex<double> z = p;
+        complex<long double> z = p;
         int n = 0;
         while (z.real()*z.real()+z.imag()*z.imag() < 4 && n < N) {
             z = z*z + c;
@@ -69,19 +69,19 @@ public:
         return n;
     }
 private:
-    const complex<double> c;
+    const complex<long double> c;
 };
 
 void tile()
 {
-    double x0 = -2;
-    double x1 = 1;
-    double y0 = -1.5;
-    double y1 = 1.5;
+    long double x0 = -2;
+    long double x1 = 1;
+    long double y0 = -1.5;
+    long double y1 = 1.5;
     int width = 100;
     int height = 100;
     char type = 'm';
-    complex<double> c;
+    complex<long double> c;
     int iterations = 200;
     int ncolors = 200;
 
@@ -92,14 +92,14 @@ void tile()
         char *q = strdup(query);
         char *p;
         while ((p = strsep(&q, "&")) != NULL) {
-                 if (strncmp(p, "x0="    , 3) == 0) x0     = strtod(p+3, NULL);
-            else if (strncmp(p, "x1="    , 3) == 0) x1     = strtod(p+3, NULL);
-            else if (strncmp(p, "y0="    , 3) == 0) y0     = strtod(p+3, NULL);
-            else if (strncmp(p, "y1="    , 3) == 0) y1     = strtod(p+3, NULL);
+                 if (strncmp(p, "x0="    , 3) == 0) x0     = strtold(p+3, NULL);
+            else if (strncmp(p, "x1="    , 3) == 0) x1     = strtold(p+3, NULL);
+            else if (strncmp(p, "y0="    , 3) == 0) y0     = strtold(p+3, NULL);
+            else if (strncmp(p, "y1="    , 3) == 0) y1     = strtold(p+3, NULL);
             else if (strncmp(p, "w="     , 2) == 0) width  = strtol(p+2, NULL, 10);
             else if (strncmp(p, "h="     , 2) == 0) height = strtol(p+2, NULL, 10);
             else if (strncmp(p, "t="     , 2) == 0) type   = p[2];
-            else if (strncmp(p, "c="     , 2) == 0) c      = complex<double>(strtod(p+2, NULL), strchr(p, ',') ? strtod(strchr(p, ',')+1, NULL) : 0);
+            else if (strncmp(p, "c="     , 2) == 0) c      = complex<long double>(strtold(p+2, NULL), strchr(p, ',') ? strtold(strchr(p, ',')+1, NULL) : 0);
             else if (strncmp(p, "i="     , 2) == 0) iterations = strtol(p+2, NULL, 10);
         }
         free(q);
@@ -130,8 +130,8 @@ void tile()
 #endif
     }
     color[ncolors-1] = white;
-    double sx = (x1-x0)/width;
-    double sy = (y1-y0)/height;
+    long double sx = (x1-x0)/width;
+    long double sy = (y1-y0)/height;
     Generator *g;
     switch (type) {
         case 'm':
@@ -144,10 +144,10 @@ void tile()
             exit(1);
     }
     for (int ty = 0; ty < height; ty++) {
-        double y = y0 + ty*sy;
+        long double y = y0 + ty*sy;
         for (int tx = 0; tx < width; tx++) {
-            double x = x0 + tx*sx;
-            int n = g->iterate(complex<double>(x, y), iterations);
+            long double x = x0 + tx*sx;
+            int n = g->iterate(complex<long double>(x, y), iterations);
             if (n < iterations) {
                 gdImageSetPixel(img, tx, ty, color[n*ncolors/iterations]);
             } else {
