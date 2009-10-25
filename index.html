@@ -178,12 +178,7 @@
         var y = ev.pageY - Frame.offset().top - TopLeftY;
         var cx = OriginX + x*Scale/TILE_SIZE;
         var cy = OriginY + y*Scale/TILE_SIZE;
-        for (j in Tiles) {
-            var a = Tiles[j];
-            for (i in a) {
-                a[i].css("display", "none");
-            }
-        }
+        $(".tile").css("display", "none");
         redrawCenter(Scale/2, cx, cy);
     }
 
@@ -192,12 +187,7 @@
         if (Scale/2 == 0) {
             return;
         }
-        for (j in Tiles) {
-            var a = Tiles[j];
-            for (i in a) {
-                a[i].css("display", "none");
-            }
-        }
+        $(".tile").css("display", "none");
         var cx = OriginX + (FrameWidth/2 - TopLeftX) * Scale / TILE_SIZE;
         var cy = OriginY + (FrameHeight/2 - TopLeftY) * Scale / TILE_SIZE;
         redrawCenter(Scale/2, cx, cy);
@@ -208,12 +198,7 @@
         if (Scale >= 1) {
             return;
         }
-        for (j in Tiles) {
-            var a = Tiles[j];
-            for (i in a) {
-                a[i].css("display", "none");
-            }
-        }
+        $(".tile").css("display", "none");
         var cx = OriginX + (FrameWidth/2 - TopLeftX) * Scale / TILE_SIZE;
         var cy = OriginY + (FrameHeight/2 - TopLeftY) * Scale / TILE_SIZE;
         redrawCenter(Scale*2, cx, cy);
@@ -276,6 +261,7 @@
             for (var i = 0; i*TILE_SIZE < FrameWidth+TILE_SIZE; i++) {
                 var t = $(document.createElement("img"));
                 t.css({"position": "absolute", "display": "none"});
+                t.addClass("tile");
                 t.load(function() {
                     $(this).css("display", "inline");
                 });
