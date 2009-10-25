@@ -11,7 +11,7 @@
 #define DEBUG
 #ifdef DEBUG
     #undef DEBUG_BORDER
-    #define DEBUG_COORDS
+    #undef DEBUG_COORDS
 #endif
 
 using namespace std;
