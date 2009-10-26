@@ -132,7 +132,6 @@ void tile()
         color[i] = gdImageColorAllocate(img, i*255/ncolors, i*255/ncolors, i*255/ncolors);
 #endif
     }
-    color[ncolors-1] = white;
     long double sx = (x1-x0)/width;
     long double sy = (y1-y0)/height;
     Generator *g;
