@@ -12,6 +12,7 @@
 #ifdef DEBUG
     #undef DEBUG_BORDER
     #undef DEBUG_COORDS
+    #undef DEBUG_ITERS
 #endif
 
 using namespace std;
@@ -165,6 +166,11 @@ void tile()
 #ifdef DEBUG_COORDS
     char buf[20];
     snprintf(buf, sizeof(buf), "%g,%g", x0, y0);
+    gdImageString(img, gdFontSmall, 2, 2, (unsigned char *)buf, white);
+#endif
+#ifdef DEBUG_ITERS
+    char buf[20];
+    snprintf(buf, sizeof(buf), "iter=%d", iterations);
     gdImageString(img, gdFontSmall, 2, 2, (unsigned char *)buf, white);
 #endif
     delete g;
