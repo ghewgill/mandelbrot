@@ -81,6 +81,7 @@ void tile()
     long double y1 = 1.5;
     int width = 100;
     int height = 100;
+    long double tw = 0;
     char type = 'm';
     complex<long double> c;
     int iterations = 200;
@@ -99,6 +100,7 @@ void tile()
             else if (strncmp(p, "y1="    , 3) == 0) y1     = strtold(p+3, NULL);
             else if (strncmp(p, "w="     , 2) == 0) width  = strtol(p+2, NULL, 10);
             else if (strncmp(p, "h="     , 2) == 0) height = strtol(p+2, NULL, 10);
+            else if (strncmp(p, "tw="    , 3) == 0) tw     = strtold(p+3, NULL);
             else if (strncmp(p, "t="     , 2) == 0) type   = p[2];
             else if (strncmp(p, "c="     , 2) == 0) c      = complex<long double>(strtold(p+2, NULL), strchr(p, ',') ? strtold(strchr(p, ',')+1, NULL) : 0);
             else if (strncmp(p, "i="     , 2) == 0) iterations = strtol(p+2, NULL, 10);
@@ -106,7 +108,7 @@ void tile()
         free(q);
     }
 
-    iterations = (int)(100 * log1p(1/(x1-x0)));
+    iterations = (int)(100 * log1p(tw > 0 ? 1/tw : 1/(x1-x0)));
 
     gdImagePtr img = gdImageCreate(width, height);
     int black = gdImageColorAllocate(img, 0, 0, 0);
