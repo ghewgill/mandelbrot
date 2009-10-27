@@ -147,9 +147,13 @@ void tile()
     }
     for (int ty = 0; ty < height; ty++) {
         long double y = y0 + ty*sy;
+        int row[width];
         for (int tx = 0; tx < width; tx++) {
             long double x = x0 + tx*sx;
-            int n = g->iterate(complex<long double>(x, y), iterations);
+            row[tx] = g->iterate(complex<long double>(x, y), iterations);
+        }
+        for (int tx = 0; tx < width; tx++) {
+            int n = row[tx];
             if (n < iterations) {
                 gdImageSetPixel(img, tx, ty, color[n % ncolors]);
             } else {
