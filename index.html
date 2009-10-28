@@ -43,6 +43,19 @@
         ].join("&");
     }
 
+    function info()
+    {
+        var s = "";
+        for (var j = 0; j < Tiles.length; j++) {
+            var a = Tiles[j];
+            for (var i = 0; i < a.length; i++) {
+                var t = a[i];
+                s += "tile " + j + "," + i + ": " + t.offset().left + "," + t.offset().top + "<br>";
+            }
+        }
+        $("#info").html(s);
+    }
+
     function redraw()
     {
         for (var j = 0; j < Tiles.length; j++) {
