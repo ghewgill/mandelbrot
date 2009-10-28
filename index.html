@@ -102,6 +102,8 @@
     {
         var leftmost = Tiles[0][0].offset().left;
         var rightmost = Tiles[0][Tiles[0].length-1].offset().left;
+        var topmost = Tiles[0][0].offset().top;
+        var bottommost = Tiles[Tiles.length-1][0].offset().top;
         $("#debug").html(TopLeftX);
         if (leftmost > 0) {
             TopLeftX -= TILE_SIZE;
@@ -122,8 +124,6 @@
                 t.attr("src", makeSrc(Tiles[0].length-1, j));
             }
         }
-        var topmost = Tiles[0][0].offset().top;
-        var bottommost = Tiles[Tiles.length-1][0].offset().top;
         if (topmost > 0) {
             TopLeftY -= TILE_SIZE;
             OriginY -= Scale;
